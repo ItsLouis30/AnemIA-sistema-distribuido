@@ -1,0 +1,44 @@
+# ============================================================
+#  AnemIA · Dependencias Python (Sección 12 del plan)
+# ============================================================
+
+# ── API ──────────────────────────────────────────────────
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+python-dotenv==1.0.1
+python-multipart==0.0.20
+
+# ── Base de datos / ORM ──────────────────────────────────
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+alembic==1.14.0
+
+# ── Datos / ML ───────────────────────────────────────────
+pandas==2.2.3
+numpy==2.1.3
+scikit-learn==1.6.0
+# 2.1.4 corrige la incompatibilidad de XGBClassifier con scikit-learn >=1.6
+# ('super' object has no attribute '__sklearn_tags__'). No subir sin probar.
+xgboost==2.1.4
+joblib==1.4.2
+# Balanceo de clases (SMOTE). 0.13.0 es compatible con scikit-learn 1.6.x.
+imbalanced-learn==0.13.0
+
+# ── Cliente HTTP (agente Gemini) ─────────────────────────
+httpx==0.28.1
+
+# ── Explicabilidad (XAI) ─────────────────────────────────
+shap==0.46.0
+lime==0.2.0.1
+
+# ── Visualización / Notebooks ────────────────────────────
+matplotlib==3.10.0
+seaborn==0.13.2
+jupyter==1.1.1
+notebook==7.3.2
+ipykernel==6.29.5
+
+# ── Testing ──────────────────────────────────────────────
+pytest==8.3.4

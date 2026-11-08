@@ -1,0 +1,54 @@
+# ============================================================
+#  AnemIA · Dockerfile.frontend (React + Webpack → Nginx)
+#
+#  Stage 1 (builder): instala Node, compila Tailwind CSS y el bundle
+#    de Webpack (npm run build → prebuild corre css antes del bundle).
+#  Stage 2 (serve):   copia los artefactos a Nginx y los sirve en :3000.
+#
+#  REACT_APP_API_URL se inyecta como ARG de build y queda embebida en
+#  el bundle.js generado por el DefinePlugin de Webpack.
+# ============================================================
+
+# ── Stage 1: build ──────────────────────────────────────────
+FROM node:20-alpine AS builder
+
+ARG REACT_APP_API_URL=http://localhost:8000
+ENV REACT_APP_API_URL=${REACT_APP_API_URL}
+
+WORKDIR /app/frontend
+
+# Instala dependencias primero para mejor cacheo de capas.
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+
+# Copia el código fuente del frontend.
+COPY frontend/ ./
+
+# REACT_APP_API_URL llega como ENV (desde el ARG) y el DefinePlugin de Webpack
+# la incrusta en el bundle. NO se copia el .env de la raíz: está en .gitignore
+# y no existe en builds de PaaS (Railway). En su ausencia, loadEnv() del
+# webpack.config cae con gracia a process.env / al valor por defecto.
+
+# prebuild → npm run css (Tailwind → public/styles.css)
+# build    → webpack --mode production (dist/bundle.js)
+RUN npm run build
+
+# ── Stage 2: serve ──────────────────────────────────────────
+FROM nginx:1.27-alpine
+
+# Puerto de escucha: en local 3000; en Railway/PaaS lo sobrescribe $PORT.
+# La plantilla se procesa con envsubst en el arranque (entrypoint oficial de
+# nginx) y genera /etc/nginx/conf.d/default.conf con el puerto real.
+ENV PORT=3000
+COPY frontend/nginx.conf.template /etc/nginx/templates/default.conf.template
+
+# Archivos estáticos: index.html + static/ + styles.css (generado por Tailwind).
+COPY --from=builder /app/frontend/public/ /usr/share/nginx/html/
+
+# Bundle de Webpack + chunks dinámicos (p. ej. jspdf.chunk.js del import()
+# dinámico de jsPDF). Se copia TODO dist/ para que nginx pueda servir cada
+# chunk en "/"; copiar solo bundle.js dejaba los chunks en 404.
+COPY --from=builder /app/frontend/dist/ /usr/share/nginx/html/
+
+EXPOSE 3000
+CMD ["/bin/sh", "-c", "envsubst '$PORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]

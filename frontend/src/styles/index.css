@@ -1,0 +1,200 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+/* Tamaño de tipografía (preferencia visual). Escala proporcional y discreta
+   para no romper el layout; el ancho del sidebar es fijo en px y no se ve
+   afectado. */
+html {
+  font-size: 16px;
+}
+html[data-font='large'] {
+  font-size: 17px;
+}
+html[data-font='xlarge'] {
+  font-size: 18.5px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  color: #0f172a;
+  /* Fondo ambiental clínico: dos halos teal muy tenues sobre un gris azulado. */
+  background:
+    radial-gradient(880px 460px at 6% -8%, rgb(13 148 136 / 0.10), transparent 55%),
+    radial-gradient(820px 520px at 100% -4%, rgb(45 212 191 / 0.08), transparent 52%),
+    linear-gradient(180deg, #f6f9fb 0%, #eef2f7 100%);
+  background-color: #eef2f7;
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'ss01' 1;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Modo oscuro: fondos profundos con la misma identidad teal y buen contraste. */
+.dark body {
+  color: #d7e1e0;
+  background:
+    radial-gradient(880px 460px at 6% -8%, rgb(13 148 136 / 0.16), transparent 55%),
+    radial-gradient(820px 520px at 100% -4%, rgb(20 184 166 / 0.10), transparent 52%),
+    linear-gradient(180deg, #0b1417 0%, #081012 100%);
+  background-color: #081012;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+@layer base {
+  /* Foco visible accesible. */
+  :focus-visible {
+    outline: 2px solid #0d9488;
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.025em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-900/[0.06]
+           transition-all duration-300
+           dark:bg-slate-800/70 dark:ring-white/10;
+  }
+  .card-interactive {
+    @apply rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-900/[0.06] cursor-pointer
+           transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover
+           hover:ring-teal-500/30
+           dark:bg-slate-800/70 dark:ring-white/10 dark:hover:ring-teal-400/30;
+  }
+  .glass {
+    @apply border-b border-white/60 bg-white/75 backdrop-blur-xl backdrop-saturate-150
+           dark:border-white/10 dark:bg-slate-900/70;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600
+           px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-900/20
+           transition-all duration-200 hover:bg-teal-700 hover:shadow-glow
+           active:scale-[.98] disabled:opacity-50 disabled:pointer-events-none disabled:shadow-none
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2
+           dark:focus-visible:ring-offset-slate-900;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-white
+           px-4 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200
+           transition-all duration-200 hover:bg-slate-50 hover:ring-slate-300 hover:text-slate-900
+           active:scale-[.98] disabled:opacity-50 disabled:pointer-events-none
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2
+           dark:bg-slate-800 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-slate-700 dark:hover:text-white dark:focus-visible:ring-offset-slate-900;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl
+           px-4 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200
+           hover:bg-slate-100 hover:text-slate-800 active:scale-[.98]
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2
+           dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white dark:focus-visible:ring-offset-slate-900;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600
+           px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-red-600/20
+           transition-all duration-200 hover:bg-red-700
+           active:scale-[.98] disabled:opacity-50 disabled:pointer-events-none
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2
+           dark:focus-visible:ring-offset-slate-900;
+  }
+  .input {
+    @apply w-full rounded-xl bg-white px-3.5 py-2.5 text-sm text-slate-800 ring-1 ring-slate-200
+           transition-all duration-200 placeholder:text-slate-400
+           hover:ring-slate-300
+           focus:outline-none focus:ring-2 focus:ring-teal-500
+           dark:bg-slate-800/80 dark:text-slate-100 dark:ring-white/10 dark:placeholder:text-slate-500 dark:hover:ring-white/20;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold;
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400
+           dark:text-slate-500;
+  }
+  .surface {
+    @apply rounded-2xl bg-white shadow-card ring-1 ring-slate-900/[0.06]
+           dark:bg-slate-800/70 dark:ring-white/10;
+  }
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg bg-slate-200/70 dark:bg-slate-700/50;
+  }
+  .skeleton::after {
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    content: '';
+    background-image: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.65), transparent);
+  }
+  .dark .skeleton::after {
+    background-image: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.08), transparent);
+  }
+}
+
+@layer utilities {
+  .font-data {
+    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
+    letter-spacing: -0.02em;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+  }
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #334155;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

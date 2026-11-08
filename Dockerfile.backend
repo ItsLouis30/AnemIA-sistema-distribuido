@@ -1,0 +1,41 @@
+# ============================================================
+#  AnemIA · Dockerfile.backend (FastAPI + ML + XAI)
+# ============================================================
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Dependencias del sistema para numpy/scipy/xgboost/lime.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Instala dependencias primero (mejor cacheo de capas).
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# Copia el código (backend + paquetes hermanos ml/agents/explainability).
+COPY backend/ ./backend/
+COPY ml/ ./ml/
+COPY agents/ ./agents/
+COPY explainability/ ./explainability/
+COPY data/ ./data/
+
+# Entrena los modelos en BUILD para que la imagen sea autosuficiente: en
+# despliegues sin volumen (Railway) el contenedor arranca al instante y sin
+# gastar memoria entrenando en runtime. En local, el volumen ./ml/saved_models
+# del compose sombrea estos artefactos con los del host (reentrenar = borrarlos).
+# La capa se cachea: solo se reentrena si cambian data/ o ml/.
+RUN python ml/train_random_forest.py && python ml/train_xgboost.py
+
+EXPOSE 8000
+
+# Railway (y otros PaaS) inyectan el puerto en $PORT; en local cae a 8000.
+# El guard `[ -f ... ]` deja el reentrenamiento como red de seguridad si los
+# artefactos no estuvieran presentes. `exec` deja a uvicorn como PID 1 para un
+# apagado limpio (SIGTERM de `docker compose down` / redeploy del PaaS).
+CMD ["sh", "-c", "[ -f ml/saved_models/random_forest.joblib ] || python ml/train_random_forest.py; [ -f ml/saved_models/xgboost.joblib ] || python ml/train_xgboost.py; exec uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

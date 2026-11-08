@@ -1,0 +1,43 @@
+# ============================================================
+#  Plantilla Nginx para la SPA de AnemIA.
+#  El entrypoint oficial de la imagen nginx procesa este archivo con
+#  `envsubst` al arrancar y escribe /etc/nginx/conf.d/default.conf,
+#  sustituyendo SOLO las variables de entorno definidas (p. ej. ${PORT}).
+#  Las variables propias de nginx ($uri, $host…) NO son variables de
+#  entorno, así que se conservan intactas.
+#
+#  ${PORT}: en local cae a 3000 (ENV del Dockerfile); en Railway/PaaS lo
+#  inyecta la plataforma. Por eso el puerto NO está hardcodeado.
+# ============================================================
+server {
+    listen $PORT;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # SPA: redirige cualquier ruta al index para React Router.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # IMPORTANTE: bundle.js y styles.css tienen NOMBRE FIJO (sin hash de
+    # contenido, por la limitación del "!" en la ruta de Webpack). Si se cachean
+    # de forma agresiva, tras un rebuild el navegador sigue mostrando la versión
+    # vieja. Por eso se revalidan siempre con ETag/Last-Modified: el navegador
+    # hace una petición condicional y recibe 304 si no cambió (rápido) o el
+    # contenido nuevo tras un rebuild (sin necesidad de hard-refresh).
+    location ~* \.(js|css)$ {
+        add_header Cache-Control "no-cache";
+    }
+
+    # Recursos con contenido estable (imágenes/fuentes) sí pueden cachearse.
+    location ~* \.(png|jpg|jpeg|gif|svg|ico|woff2?)$ {
+        expires 7d;
+        add_header Cache-Control "public";
+    }
+
+    # El HTML nunca se cachea (es el punto de entrada de la SPA).
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+    }
+}

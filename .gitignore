@@ -1,0 +1,45 @@
+# ── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ── Modelos / artefactos entrenados ──────────────────────
+ml/saved_models/*.joblib
+ml/saved_models/*.pkl
+explainability/outputs/*.png
+explainability/outputs/*.json
+
+# ── Datos pesados (se versiona solo la muestra) ──────────
+data/raw/*.csv
+data/processed/*.csv
+!data/sample/
+
+# ── Node / Frontend ──────────────────────────────────────
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/public/styles.css
+dist/
+
+# ── Entorno ──────────────────────────────────────────────
+# El .env no se versiona (usar .env.example como plantilla al clonar).
+.env
+*.local
+
+# ── Documentación interna / planificación (no se versiona) ───
+CLAUDE.md
+PLAN_CORRECCIONES_Y_MEJORAS.md
+
+# ── Docker / DB ──────────────────────────────────────────
+postgres_data/
+
+# ── Editor / OS ──────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

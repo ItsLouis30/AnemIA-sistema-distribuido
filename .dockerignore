@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+node_modules/
+
+# Datos pesados (solo se necesita la muestra en data/sample/)
+data/raw/
+data/processed/
+
+# Modelos entrenados (el backend los regenera si faltan)
+ml/saved_models/*.joblib
+ml/saved_models/*.pkl
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.local
+
+# Git
+.git/
+.gitignore

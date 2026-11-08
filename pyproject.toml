@@ -1,0 +1,57 @@
+[project]
+name = "anemia"
+version = "2.0.0"
+description = "AnemIA · Sistema multiagente con ML y XAI para anemia infantil en Puno (FastAPI + React/Webpack + PostgreSQL)."
+readme = "README.md"
+# Las dependencias fijadas (numpy 2.1.3, scikit-learn 1.6.0, psycopg2-binary
+# 2.9.10, etc.) no tienen wheels para Python 3.14; usar 3.11–3.13 (ver
+# .python-version, fijado en 3.12).
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    # API
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "pydantic==2.10.4",
+    "pydantic-settings==2.7.1",
+    "python-dotenv==1.0.1",
+    "python-multipart==0.0.20",
+    # Base de datos / ORM
+    "sqlalchemy==2.0.36",
+    "psycopg2-binary==2.9.10",
+    "alembic==1.14.0",
+    # Datos / ML
+    "pandas==2.2.3",
+    "numpy==2.1.3",
+    "scikit-learn==1.6.0",
+    # 2.1.4: compatibilidad con scikit-learn >=1.6 (__sklearn_tags__).
+    "xgboost==2.1.4",
+    "joblib==1.4.2",
+    # Balanceo de clases (SMOTE); 0.13.0 compatible con scikit-learn 1.6.x.
+    "imbalanced-learn==0.13.0",
+    # Cliente HTTP usado por el agente de recomendaciones (Gemini).
+    "httpx==0.28.1",
+    # Explicabilidad (XAI)
+    "shap==0.46.0",
+    "lime==0.2.0.1",
+    # Visualización / Notebooks
+    "matplotlib==3.10.0",
+    "seaborn==0.13.2",
+    "jupyter==1.1.1",
+    "notebook==7.3.2",
+    "ipykernel==6.29.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.4",
+    "httpx==0.28.1",
+]
+
+[tool.uv]
+# uv gestiona el entorno (.venv) y el lockfile (uv.lock).
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+markers = ["slow: pruebas que requieren un modelo entrenado."]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::UserWarning"]

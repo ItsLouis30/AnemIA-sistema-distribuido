@@ -1,0 +1,83 @@
+# ============================================================
+#  AnemIA · docker-compose.yml
+#  Servicios: db (PostgreSQL) · backend (FastAPI) · frontend (React/Webpack)
+#             pgadmin (opcional)
+#  Uso:  docker compose up --build
+#  Puertos: backend 8000 · frontend 3000 · postgres 5432 · pgadmin 5050
+# ============================================================
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: anemia_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-anemia_db}
+    ports:
+      # host:contenedor — el host usa POSTGRES_PORT (5433 por defecto) para
+      # no chocar con otro PostgreSQL; el contenedor escucha en 5432.
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-anemia_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: anemia_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    # Carga TODO el .env de la raíz (incluida GEMINI_API_KEY y la cadena de
+    # modelos) dentro del contenedor. Las claves repetidas en `environment:`
+    # tienen prioridad sobre `env_file`, así que los overrides de red Docker
+    # de abajo ganan.
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-anemia_db}
+      CORS_ORIGINS: http://localhost:3000
+      ENVIRONMENT: production
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ml/saved_models:/app/ml/saved_models
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        REACT_APP_API_URL: http://localhost:8000
+    container_name: anemia_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: anemia_pgadmin
+    restart: unless-stopped
+    profiles: ["tools"]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@anemia.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
