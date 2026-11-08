@@ -1,10 +1,9 @@
+from typing import Any, Dict, Optional
+
 from agents.llm.gemini_client import generate_text
-import backend.app.services.pipeline_service as pipeline_service
 
 
-def ask_chat(message: str):
-
-    report = pipeline_service.LAST_REPORT
+def ask_chat(message: str, report: Optional[Dict[str, Any]] = None):
 
     if report is None:
 

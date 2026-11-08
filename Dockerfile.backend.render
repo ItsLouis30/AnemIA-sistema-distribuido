@@ -1,0 +1,50 @@
+# Imagen de despliegue para AnemIA v1 en Render.
+# Entrena los artefactos en una etapa de build y copia al runtime solo el
+# entorno Python, el código, los modelos resultantes y la muestra de LIME.
+FROM python:3.11-slim AS builder
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+RUN python -m venv "$VIRTUAL_ENV"
+COPY requirements.production.txt ./
+RUN pip install --upgrade pip && pip install -r requirements.production.txt
+
+COPY ml/ ./ml/
+COPY data/dataset2024.csv data/dataset2025.csv ./data/
+RUN python ml/train_random_forest.py && python ml/train_xgboost.py
+
+
+FROM python:3.11-slim AS runtime
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH"
+
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY --from=builder /opt/venv /opt/venv
+COPY backend/ ./backend/
+COPY agents/ ./agents/
+COPY explainability/ ./explainability/
+COPY ml/ ./ml/
+COPY data/sample/ ./data/sample/
+COPY --from=builder /app/ml/saved_models/ ./ml/saved_models/
+
+RUN test -f ml/saved_models/random_forest.joblib \
+    && test -f ml/saved_models/xgboost.joblib
+
+EXPOSE 8000
+CMD ["sh", "-c", "exec uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

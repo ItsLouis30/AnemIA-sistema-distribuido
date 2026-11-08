@@ -417,7 +417,7 @@ export function useChat() {
         return
       }
 
-      const response = await sendChatMessage(text)
+      const response = await sendChatMessage(text, report)
 
       setShowTyping(false)
 
@@ -454,6 +454,7 @@ export function useChat() {
     loadExampleCase,
     startNewConversation,
     scrollToBottom,
+    report,
   ])
 
   return {

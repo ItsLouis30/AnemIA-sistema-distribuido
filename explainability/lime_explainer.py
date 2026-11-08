@@ -39,9 +39,10 @@ def _background(preprocessor, n: int = 500) -> np.ndarray:
     import os
     data_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "data", "raw", "dataset.csv",
+        "data", "sample", "sample_200.csv",
     )
-    df = load_dataset(data_path).sample(n=min(n, 2000), random_state=7)
+    df = load_dataset(data_path)
+    df = df.sample(n=min(n, len(df)), random_state=7)
     X, _ = split_xy(df)
     bg = preprocessor.transform(X)
     _BACKGROUND_CACHE[str(key)] = bg
@@ -68,7 +69,7 @@ def local_explanation(case: dict, model_name: str = "random_forest",
         explainer = LimeTabularExplainer(
             training_data=bg,
             feature_names=feature_names,
-            class_names=CLASS_ORDER,
+            class_names=artifact.get("classes", CLASS_ORDER),
             discretize_continuous=True,
             mode="classification",
         )

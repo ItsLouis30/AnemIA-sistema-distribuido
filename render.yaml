@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: anemia-v1-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.backend.render
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: off
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEFAULT_MODEL
+        value: random_forest
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+  - type: web
+    name: anemia-v1-web
+    runtime: static
+    autoDeployTrigger: off
+    buildCommand: cd frontend && npm ci && npm run build && cp -r public/. dist/
+    staticPublishPath: ./frontend/dist
+    envVars:
+      # Se incrusta en bundle.js durante npm run build; debe incluir https://.
+      - key: REACT_APP_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin

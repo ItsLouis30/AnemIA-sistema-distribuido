@@ -1,0 +1,24 @@
+# Runtime y build de modelos para el despliegue web de AnemIA v1.
+# Excluye notebooks, visualización, testing, Alembic y multipart (no usados
+# por la API en ejecución).
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+python-dotenv==1.0.1
+
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+
+pandas==2.2.3
+numpy==2.1.3
+scikit-learn==1.6.0
+# Variante oficial CPU-only: expone el mismo módulo `xgboost` y evita incluir
+# cientos de MB de bibliotecas CUDA/NCCL que Render CPU no puede utilizar.
+xgboost-cpu==2.1.4
+joblib==1.4.2
+imbalanced-learn==0.13.0
+
+httpx==0.28.1
+shap==0.46.0
+lime==0.2.0.1

@@ -81,13 +81,15 @@ export async function getHealth() {
 // No hay endpoint /chat/message — el chat usa POST /agents/run
 
 export async function sendChatMessage(
-  message: string
+  message: string,
+  report: AgentRunReport | null,
 ) {
 
   const { data } = await api.post(
     "/chat",
     {
-      message
+      message,
+      report,
     }
   )
 
